@@ -1,31 +1,16 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:nexu_chat_client/core/show_progress_indicator.dart';
-import 'package:nexu_chat_client/features/auth/login/login_consumer.dart';
-import 'package:nexu_chat_client/features/main/main_view_controller.dart';
+import 'package:nexu_chat_client/core/controllers/controllers/users/controller.dart';
+import 'package:nexu_chat_client/core/controllers/controllers/users/methods/logout/method.dart';
+import 'package:nexu_chat_client/features/auth/login/login_view.dart';
 
-import '../../../core/services/core/controllers/user_controller/methods/logout_controller.dart';
-import '../../../core/services/core/controllers/user_controller/users_controller.dart';
-import '../../../core/services/service_request.dart';
-
-class MainMenuViewController {
-  final MainViewController mainState;
-  MainMenuViewController(this.mainState);
-
-  void encerrarSessao(BuildContext context) async{
-    showProgressIndicator(context, barrierDismissible: false);
-    final resposta = await ServiceRequest.fetch<UserController>(LogoutController());
+final class MainMenuViewController {
+  Future<void> encerrarSessao(BuildContext context) async{
+    await UsersController.fetch(LogoutMethod());
 
     if(context.mounted){
-      Navigator.pop(context);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) {
         return LoginView();
-      },));
+      },), (route) => false,);
     }
-  }
-
-  void alterarBody(BuildContext context, MainBody mainBody){
-    mainState.mainBody.value = mainBody;
-    Navigator.pop(context);
   }
 }

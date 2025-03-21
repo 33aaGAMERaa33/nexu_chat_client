@@ -2,20 +2,26 @@
 import 'package:dio/dio.dart';
 import 'package:nexu_chat_client/core/event/event_manager.dart';
 import 'package:nexu_chat_client/core/event/events/event_post_request.dart';
-import 'package:nexu_chat_client/core/http_request_api/http_request_api.dart';
+import 'package:nexu_chat_client/core/http_request_api.dart';
 
-import 'core/controller.dart';
-import 'core/method.dart';
+import '../controllers/controller.dart';
+import '../controllers/method.dart';
 
 final class ServiceRequest{
   static final _httpRequestApi = HttpRequestApi();
   ServiceRequest._();
 
-  static Future<Response<dynamic>> fetch<T extends Controller>(
+  static Future<dynamic> fetch<T extends Controller>(
       Method<T> method, {Map<String, dynamic>? data, bool? sendEvent = true}
       ) async {
-    _sendEvent<T>(method: method, response: null, isLoading: true);
-    Response<dynamic> resultado;
+    final event = EventPostRequest(
+        method: method,
+        isLoading: true,
+        responseDto: null
+    );
+
+    _sendEvent<T>(event);
+    dynamic resultado;
 
     try {
       resultado = (await _httpRequestApi.httpRequest(method: method));
@@ -41,20 +47,19 @@ final class ServiceRequest{
           requestOptions: RequestOptions()
       );
     }
+    try{
+      resultado = method.dtoAdapter.adapter(resultado);
+    }catch(e, stackTree){
+      print(e);
+      print(stackTree);
+    }
 
-    _sendEvent<T>(method: method, response: resultado, isLoading: false);
+    event.finish(resultado);
+    _sendEvent<T>(event);
     return resultado;
   }
 
-  static void _sendEvent<T extends Controller>({
-    required Method<T> method,
-    required Response<dynamic> ? response,
-    required bool isLoading
-  }){
-    EventManager.dispararEvento<EventPostRequest<T>>(EventPostRequest<T>(
-        controller: method,
-        isLoading: isLoading,
-        response: response)
-    );
+  static void _sendEvent<T extends Controller>(EventPostRequest<T> event){
+    EventManager.dispararEvento<EventPostRequest<T>>(event);
   }
 }

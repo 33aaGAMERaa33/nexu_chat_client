@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:nexu_chat_client/features/main/main_view_controller.dart';
+import 'package:nexu_chat_client/core/event/event_manager.dart';
+import 'package:nexu_chat_client/core/event/events/event_main_body_changed.dart';
+import 'package:nexu_chat_client/features/auth/login/login_view.dart';
+import 'package:nexu_chat_client/features/main/body/body_view_controller.dart';
 import 'package:nexu_chat_client/features/main/menu/menu_view_controller.dart';
 
-class MainMenuView extends StatelessWidget{
-  late final MainMenuViewController state;
-  MainMenuView(MainViewController mainState, {super.key}){
-    state = MainMenuViewController(mainState);
-  }
+final class MainMenuView extends StatelessWidget{
+  late final MainMenuViewController viewController;
+  MainMenuView({super.key}) : viewController = MainMenuViewController();
 
   @override
   Widget build(BuildContext context) {
@@ -16,13 +17,15 @@ class MainMenuView extends StatelessWidget{
         children: [
           Column(
             children: [
-              const Text("Menu"),
-              ...MainBody.values.map((body){
-                return ListTile(
-                  title: Text(body.getTitle()),
-                  leading: Icon(body.getIcon()),
-                  onTap: (){
-                    state.alterarBody(context, body);
+              ...MainBodyState.values.map((bodyState){
+                return _buildMenuItem(
+                  bodyState.title(),
+                  bodyState.icon(),
+                  () {
+                    Navigator.pop(context);
+                    EventManager.dispararEvento<EventMainBodyChanged>(EventMainBodyChanged(
+                      bodyState
+                    ));
                   },
                 );
               })
@@ -30,9 +33,9 @@ class MainMenuView extends StatelessWidget{
           ),
           Column(
             children: [
-              _buildItemMenu(title: "Encerrar sessão", icon: Icons.exit_to_app, onTap: (){
-                state.encerrarSessao(context);
-              }),
+              _buildMenuItem("Encerrar sessão", Icons.exit_to_app, (){
+                viewController.encerrarSessao(context);
+              })
             ],
           )
         ],
@@ -40,11 +43,7 @@ class MainMenuView extends StatelessWidget{
     );
   }
 
-  Widget _buildItemMenu({
-    required String title,
-    required IconData icon,
-    required Function() onTap,
-  }){
+  Widget _buildMenuItem(String title, IconData icon, Function() onTap){
     return ListTile(
       title: Text(title),
       leading: Icon(icon),

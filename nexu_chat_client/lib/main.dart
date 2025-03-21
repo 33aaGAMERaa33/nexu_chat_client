@@ -1,53 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:nexu_chat_client/core/models/mensagem_model.dart';
 import 'package:nexu_chat_client/core/models/user_model.dart';
-import 'package:nexu_chat_client/core/services/core/services/connected_service.dart';
-import 'package:nexu_chat_client/core/services/core/services/contact_request_processed_service.dart';
-import 'package:nexu_chat_client/core/services/core/services/desconnected_service.dart';
 import 'package:nexu_chat_client/core/services/service_web_socket.dart';
-import 'package:nexu_chat_client/features/session/session_view.dart';
-
-import 'core/http_request_api/http_request_api.dart';
+import 'package:nexu_chat_client/core/services/services/user_logged_service.dart';
+import 'package:nexu_chat_client/core/services/services/web_socket_services/connect_service.dart';
+import 'package:nexu_chat_client/core/services/services/web_socket_services/disconnect_service.dart';
+import 'package:nexu_chat_client/core/services/services/web_socket_services/mensagem_recebida_service.dart';
+import 'package:nexu_chat_client/features/auth/login/login_view.dart';
+import 'package:nexu_chat_client/utils/global_context.dart';
+import 'core/http_request_api.dart';
 
 const nomeApp = "Nexu Chat";
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await HttpRequestApi().init();
 
+  _initServices();
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  createState() => _MyAppState();
+void _initServices(){
+  UserLoggedService.init();
+  ServiceWebSocket.init();
+  MensagemRecebidaService.init();
+  ConnectService.init();
+  DisconnectService.init();
 }
 
-class _MyAppState extends State<MyApp> {
-  bool _initialized = false;
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  @override
-  void initState() {
-    super.initState();
-    if (!_initialized) {
-      // Coloque suas inicializações aqui
-      UserModel.init();
-      ServiceWebSocket.init();
-      ContactRequestProcessedService.init();
-      ConnectedService.init();
-      DesconnectedService.init();
-      _initialized = true;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: nomeApp,
       theme: ThemeData.dark(),
-      home: SessionView(),
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: scaffoldMessengerKey,
+      navigatorKey: navigatorKey,
+      onGenerateRoute: (settings){
+        return MaterialPageRoute(
+          builder: (context) {
+            return LoginView();
+          },
+          settings: settings
+        );
+      },
     );
   }
 }

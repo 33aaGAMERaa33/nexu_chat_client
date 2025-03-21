@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nexu_chat_client/features/main/body/body_view.dart';
+import 'package:nexu_chat_client/features/main/main_view_controller.dart';
 import 'package:nexu_chat_client/features/main/menu/menu_view.dart';
 import 'package:nexu_chat_client/main.dart';
 
-import 'main_view_controller.dart';
-
-class MainView extends StatelessWidget{
-  final MainViewController viewController = MainViewController();
-  MainView({super.key});
+final class MainView extends StatelessWidget{
+  final MainViewController viewController;
+  MainView({super.key}) : viewController = MainViewController();
 
   @override
   Widget build(BuildContext context) {
@@ -14,13 +14,8 @@ class MainView extends StatelessWidget{
       appBar: AppBar(
         title: const Text(nomeApp),
       ),
-      drawer: MainMenuView(viewController),
-      body: ValueListenableBuilder(
-        valueListenable: viewController.mainBody,
-        builder: (context, mainBody, child) {
-          return mainBody.toBody();
-        },
-      ),
+      drawer: MainMenuView(),
+      body: MainBodyView(),
     );
   }
 }

@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
 
-class AuthForm extends StatelessWidget{
-  final String titulo;
+final class AuthForm extends StatelessWidget{
+  final String title;
+  final List<Widget> inputs;
+  final List<Widget> actions;
   final GlobalKey<FormState> formKey;
-  final Widget content;
-  final Widget actions;
   final ValueNotifier<bool> loadingNotifier;
-  final ValueNotifier<String?> errorMessage;
-  final double ? width;
-  final double ? height;
+  final ValueNotifier<String?> messageNotifier;
 
   const AuthForm({
-    required this.titulo,
-    required this.formKey,
-    required this.content,
+    required this.title,
+    required this.inputs,
     required this.actions,
+    required this.formKey,
     required this.loadingNotifier,
-    required this.errorMessage,
-    this.width,
-    this.height,
+    required this.messageNotifier,
     super.key,
   });
 
@@ -26,78 +22,56 @@ class AuthForm extends StatelessWidget{
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Card(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: width ?? 400,
-                height: height ?? 500,
-                child: _form(),
-              ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 100),
-                child: _statusRequestWidget(),
-              )
-            ],
+        child: SingleChildScrollView(
+          child: Card(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 400,
+                  height: 500,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildTitleWidget(),
+                        _buildInputsWidget(),
+                        _buildActionsWidget(),
+                      ],
+                    ),
+                  ),
+                ),
+                _statusForm(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-  Widget _form(){
-    return Form(
-      key: formKey,
-      child: Stack(
-        children: [
-          _titulo(),
-          _camposPreencher(),
-          _actionButtons(),
-        ],
-      ),
+
+  Widget _buildTitleWidget(){
+    return Text(title);
+  }
+  Widget _buildInputsWidget(){
+    return Column(
+      children: inputs,
     );
   }
-  Widget _titulo(){
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 50),
-      child: Align(
-        alignment: AlignmentDirectional.topCenter,
-        child: Text("Acessar conta"),
-      ),
+  Widget _buildActionsWidget(){
+    return Row(
+      children: actions,
     );
   }
-  Widget _camposPreencher(){
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Align(
-        alignment: AlignmentDirectional.center,
-        child: content,
-      ),
-    );
-  }
-  Widget _actionButtons(){
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 50),
-      child: Align(
-        alignment: AlignmentDirectional.bottomCenter,
-        child: actions,
-      ),
-    );
-  }
-  Widget _statusRequestWidget(){
+  Widget _statusForm(){
     return ValueListenableBuilder(
       valueListenable: loadingNotifier,
       builder: (context, isLoading, child) {
         if(isLoading){
-          return const Padding(
-            padding: EdgeInsets.only(bottom: 10),
-            child: CircularProgressIndicator(),
-          );
-        }else if(errorMessage.value != null){
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Text(errorMessage.value!),
-          );
+          return CircularProgressIndicator();
+        }else if(messageNotifier.value != null){
+          return Text(messageNotifier.value!);
         }
 
         return const SizedBox();
@@ -113,7 +87,7 @@ class AuthForm extends StatelessWidget{
   }
   static Widget buildActionButton(String child, Function() onPressed){
     return Expanded(
-      child: ElevatedButton(onPressed: onPressed, child: Text(child)),
+      child: ElevatedButton(onPressed: onPressed, child: Text(child))
     );
   }
 }
